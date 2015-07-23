@@ -539,7 +539,7 @@ static int parse_args(struct config *cfg, char **url, struct http_parser_url *pa
 }
 
 static void print_stats_header() {
-    printf("  Thread Stats%6s%11s%8s%12s\n", "Avg", "Stdev", "Max", "+/- Stdev");
+    printf("  Thread Stats%6s%9s%12s%8s%14s\n", "Min", "Avg", "Stdev", "Max", "+/- Stdev");
 }
 
 static void print_units(long double n, char *(*fmt)(long double), int width) {
@@ -556,19 +556,38 @@ static void print_units(long double n, char *(*fmt)(long double), int width) {
 }
 
 static void print_stats(char *name, stats *stats, char *(*fmt)(long double)) {
+    uint64_t min = stats->min;
     uint64_t max = stats->max;
     long double mean  = stats_mean(stats);
     long double stdev = stats_stdev(stats, mean);
 
     printf("    %-10s", name);
-    print_units(mean,  fmt, 8);
+    print_units(min,   fmt, 8);
+    print_units(mean,  fmt, 10);
     print_units(stdev, fmt, 10);
     print_units(max,   fmt, 9);
     printf("%8.2Lf%%\n", stats_within_stdev(stats, mean, stdev, 1));
 }
 
 static void print_stats_latency(stats *stats) {
-    long double percentiles[] = { 50.0, 75.0, 90.0, 99.0 };
+    long double percentiles[] = {
+        0.0,
+        5.0,
+        10.0,
+        20.0,
+        30.0,
+        40.0,
+        50.0,
+        60.0,
+        70.0,
+        75.0,
+        80.0,
+        85.0,
+        90.0,
+        95.0,
+        99.0,
+        99.9,
+    };
     printf("  Latency Distribution\n");
     for (size_t i = 0; i < sizeof(percentiles) / sizeof(long double); i++) {
         long double p = percentiles[i];
